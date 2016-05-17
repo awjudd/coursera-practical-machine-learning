@@ -1,0 +1,189 @@
+---
+title: "Human Activity Recognition"
+author: "Andrew William Judd"
+date: "May 16, 2016"
+output: html_document
+---
+
+```{r warning=FALSE, message=FALSE}
+library(caret)
+library(rpart)
+library(rpart.plot)
+```
+
+```{r}
+seed <- 19
+train.url <- 'http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv'
+test.url <- 'http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv'
+```
+
+
+```{r eval=FALSE}
+train.data <- read.csv(url(train.url), na.strings = c('NA', '#DIV/0!', ''))
+test.data <- read.csv(url(test.url), na.strings = c('NA', '#DIV/0!', ''))
+```
+
+```{r echo=FALSE}
+if(!exists('train.data')) {
+    if(!file.exists('training.csv')) {
+        download.file(train.url, 'training.csv')
+    }
+    
+    train.data <- read.csv('training.csv', na.strings = c('NA', '#DIV/0!', ''))
+}
+
+if(!exists('test.data')) {
+    if(!file.exists('test.csv')) {
+        download.file(test.url, 'test.csv')
+    }
+    
+    test.data <- read.csv('test.csv', na.strings = c('NA', '#DIV/0!', ''))
+}
+```
+
+```{r}
+set.seed(seed)
+
+data.toTrain <- createDataPartition(train.data$classe, p = 0.7, list = FALSE)
+data.train <- train.data[data.toTrain, ]
+dim(data.train)
+data.test <- train.data[-data.toTrain, ]
+dim(data.test)
+
+data.train <- data.train[, -(1:5)]
+data.test <- data.test[, -(1:5)]
+```
+
+```{r}
+data.nearZero <- nearZeroVar(data.train)
+data.train.cleaned <- data.train[,-data.nearZero]
+dim(data.train.cleaned)
+data.test.cleaned <- data.test[,-data.nearZero]
+dim(data.test.cleaned)
+```
+
+```{r}
+data.na <- sapply(data.train.cleaned, function(x) mean(is.na(x))) > 0.95
+data.train.cleaned <- data.train.cleaned[, data.na == FALSE]
+dim(data.train.cleaned)
+data.test.cleaned <- data.test.cleaned[, data.na == FALSE]
+dim(data.test.cleaned)
+```
+
+# Train the Models
+
+## Decision Trees
+
+### Train it
+
+```{r cache = TRUE, warning = FALSE}
+set.seed(seed)
+result.decision_tree.model <- rpart(classe ~ ., data = data.train)
+```
+
+### Predict it
+
+```{r cache = TRUE, warning = FALSE}
+result.decision_tree.predict <- predict(
+    result.decision_tree.model,
+    newdata = data.test,
+    type='class'
+)
+
+result.decision_tree.confusion <- confusionMatrix(
+    result.decision_tree.predict,
+    data.test$classe
+)
+
+result.decision_tree.confusion
+```
+
+## Generalized Boosted
+
+### Train It
+
+```{r cache = TRUE, warning = FALSE}
+set.seed(seed)
+
+result.gbm.control <- trainControl(method = 'repeatedcv', number = 5, repeats = 1)
+
+if(!exists('result.gbm.model')) {
+    result.gbm.model <- train(
+        classe ~ .,
+        data = data.train.cleaned,
+        method = 'gbm',
+        trControl = result.gbm.control,
+        verbose = FALSE
+    )   
+}
+```
+
+### Predict It
+
+```{r cache = TRUE, warning = FALSE}
+result.gbm.predict <- predict(result.gbm.model, newdata = data.test)
+result.gbm.confusion <- confusionMatrix(result.gbm.predict, data.test$classe)
+result.gbm.confusion
+```
+
+## Random Forest
+
+### Train It
+
+```{r cache = TRUE, warning = FALSE}
+set.seed(seed)
+
+result.random_forest.control <- trainControl(method='cv', number = 3, verboseIter = FALSE)
+
+if(!exists('result.random_forest.model')) {
+    result.random_forest.model <- train(
+        classe ~ .,
+        data = data.train.cleaned,
+        method = 'rf',
+        trControl = result.random_forest.control
+    )
+}
+
+result.random_forest.model$finalModel
+```
+
+### Predict It
+
+```{r cache = TRUE, warning = FALSE}
+result.random_forest.predict <- predict(
+    result.random_forest.model,
+    newdata = data.test.cleaned
+)
+
+result.random_forest.confusion <- confusionMatrix(
+    result.random_forest.predict,
+    data.test.cleaned$classe
+)
+```
+
+# Apply the Model
+
+```{r}
+output <- predict(result.random_forest.model, newdata = test.data)
+output
+```
+
+
+# Appendix
+
+```{r echo=FALSE}
+plot(result.decision_tree.confusion$table, col = result.decision_tree.confusion$byClass, 
+     main = paste("Decision Tree - Accuracy =",
+                  round(result.decision_tree.confusion$overall['Accuracy'], 4)))
+```
+
+```{r}
+plot(result.gbm.confusion$table, col = result.gbm.confusion$byClass, 
+     main = paste("GBM - Accuracy =", round(result.gbm.confusion$overall['Accuracy'], 4)))
+```
+
+```{r}
+plot(result.random_forest.confusion$table, col = result.random_forest.confusion$byClass, 
+     main = paste("Random Forest - Accuracy =",
+                  round(result.random_forest.confusion$overall['Accuracy'], 4)))
+```
