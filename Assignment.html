@@ -88,10 +88,8 @@ img {
 </ul></li>
 <li>Cleanse the data</li>
 </ul>
-<pre class="r"><code>library(caret)</code></pre>
-<pre><code>## Loading required package: lattice</code></pre>
-<pre><code>## Loading required package: ggplot2</code></pre>
-<pre class="r"><code>library(rpart)
+<pre class="r"><code>library(caret)
+library(rpart)
 library(rpart.plot)
 
 seed &lt;- 19
@@ -354,9 +352,16 @@ result.random_forest.confusion &lt;- confusionMatrix(
 <pre class="r"><code>output &lt;- predict(
     result.random_forest.model,
     newdata = test.data
-)
-
-output</code></pre>
+)</code></pre>
+<pre><code>## Loading required package: randomForest</code></pre>
+<pre><code>## randomForest 4.6-12</code></pre>
+<pre><code>## Type rfNews() to see new features/changes/bug fixes.</code></pre>
+<pre><code>## 
+## Attaching package: 'randomForest'</code></pre>
+<pre><code>## The following object is masked from 'package:ggplot2':
+## 
+##     margin</code></pre>
+<pre class="r"><code>output</code></pre>
 <pre><code>##  [1] B A B A A E D B A A B C B A E E A B B B
 ## Levels: A B C D E</code></pre>
 </div>

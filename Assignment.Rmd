@@ -24,7 +24,7 @@ Start by setting up the environment for analsis.  In order to do this, we need t
     * [Testing Set](http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv)
  * Cleanse the data
 
-```{r}
+```{r warning = FALSE, message = FALSE}
 library(caret)
 library(rpart)
 library(rpart.plot)
