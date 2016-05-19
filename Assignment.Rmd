@@ -1,7 +1,7 @@
 ---
 title: "Human Activity Recognition"
 author: "Andrew William Judd"
-date: "May 16, 2016"
+date: "May 18, 2016"
 output: html_document
 ---
 
@@ -35,8 +35,15 @@ test.url <- 'http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv'
 ```
 
 ```{r eval=FALSE}
-train.data <- read.csv(url(train.url), na.strings = c('NA', '#DIV/0!', ''))
-test.data <- read.csv(url(test.url), na.strings = c('NA', '#DIV/0!', ''))
+train.data <- read.csv(
+    url(train.url),
+    na.strings = c('NA', '#DIV/0!', '')
+)
+
+test.data <- read.csv(
+    url(test.url),
+    na.strings = c('NA', '#DIV/0!', '')
+)
 ```
 
 ```{r echo=FALSE}
@@ -79,7 +86,7 @@ After splitting the data, we will remove the first 5 columns as they do not have
  * `raw_timestamp_part_2`
  * `cvtd_timestamp`
 
-```{r, eval = FALSE}
+```{r}
 set.seed(seed)
 
 # Partition the data for further analysis
@@ -101,7 +108,7 @@ Now that the data has been loaded, we need to first get rid of any data that onl
  * very few unique values relative to the number of samples
  * ratio of the frequency of the most common value to the frequency of the second most common value is large
 
-```{r, eval = FALSE}
+```{r}
 data.nearZero <- nearZeroVar(data.train)
 data.train.cleaned <- data.train[,-data.nearZero]
 dim(data.train.cleaned)
@@ -111,7 +118,7 @@ dim(data.test.cleaned)
 
 After looking at the data, we noticed that there were multiple `NA` values which could affect the overall accuracy of the data.  Because of that, we will further reduce the columns based on whether or not the data is mostly `NA`.
 
-```{r, eval = FALSE}
+```{r}
 # Grab a list where they are mostly "NA" values
 data.na <- sapply(
     data.train.cleaned,
@@ -141,7 +148,7 @@ In order to ensure we would have the most accurate predictions possible, we will
 
 Let's start by training the decision tree with the training data set.
 
-```{r cache = TRUE, warning = FALSE, eval = FALSE}
+```{r cache = TRUE, warning = FALSE}
 set.seed(seed)
 result.decision_tree.model <- rpart(
     classe ~ ., data = data.train
@@ -150,7 +157,7 @@ result.decision_tree.model <- rpart(
 
 Now that the model has been created, let's evaluate our results.
 
-```{r cache = TRUE, warning = FALSE, eval = FALSE}
+```{r cache = TRUE, warning = FALSE}
 result.decision_tree.predict <- predict(
     result.decision_tree.model,
     newdata = data.test,
@@ -173,7 +180,7 @@ For a breakdown of this approach, please refer to Appendix **Figure 1** for a de
 
 Let's start by training the generalized boost with the training data set.
 
-```{r cache = TRUE, warning = FALSE, eval = FALSE}
+```{r cache = TRUE, warning = FALSE}
 set.seed(seed)
 
 result.gbm.control <- trainControl(
@@ -182,7 +189,9 @@ result.gbm.control <- trainControl(
     repeats = 1
 )
 
+# Did we already create the model?
 if(!exists('result.gbm.model')) {
+    # We didn't, so let's train it
     result.gbm.model <- train(
         classe ~ .,
         data = data.train.cleaned,
@@ -195,7 +204,7 @@ if(!exists('result.gbm.model')) {
 
 Now that the model has been created, let's evaluate our results.
 
-```{r cache = TRUE, warning = FALSE, eval = FALSE}
+```{r cache = TRUE, warning = FALSE}
 result.gbm.predict <- predict(
     result.gbm.model,
     newdata = data.test
@@ -217,7 +226,7 @@ For a breakdown of this approach, please refer to Appendix **Figure 2** for a de
 
 ### Train It
 
-```{r cache = TRUE, warning = FALSE, eval = FALSE}
+```{r cache = TRUE, warning = FALSE}
 set.seed(seed)
 
 result.random_forest.control <- trainControl(
@@ -242,7 +251,7 @@ result.random_forest.model$finalModel
 
 Now that the model has been created, let's evaluate our results.
 
-```{r cache = TRUE, warning = FALSE, eval = FALSE}
+```{r cache = TRUE, warning = FALSE}
 result.random_forest.predict <- predict(
     result.random_forest.model,
     newdata = data.test.cleaned
@@ -262,7 +271,7 @@ For a breakdown of this approach, please refer to Appendix **Figure 3** for a de
 
 Based on the various accuracies listed above, we have decided to use the **random forest** model to predict the data that we expect to come out of the testing data set.
 
-```{r, eval = FALSE}
+```{r}
 output <- predict(
     result.random_forest.model,
     newdata = test.data
@@ -274,7 +283,7 @@ output
 
 # Appendix
 
-```{r, eval = FALSE, echo = FALSE}
+```{r, echo = FALSE}
 plot(
     result.decision_tree.confusion$table,
     col = result.decision_tree.confusion$byClass, 
@@ -287,7 +296,7 @@ plot(
 
 **Figure 1** - Decision Tree Results
 
-```{r, eval = FALSE, echo = FALSE}
+```{r echo = FALSE}
 plot(
     result.gbm.confusion$table,
     col = result.gbm.confusion$byClass, 
@@ -300,7 +309,7 @@ plot(
 
 **Figure 2** - Generalized Boosted Results
 
-```{r, eval = FALSE, echo = FALSE}
+```{r echo = FALSE}
 plot(
     result.random_forest.confusion$table,
     col = result.random_forest.confusion$byClass,
