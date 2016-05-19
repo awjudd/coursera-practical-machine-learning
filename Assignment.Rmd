@@ -7,7 +7,7 @@ output: html_document
 
 # Executive Summary
 
-In this study, we analyzed the personal activity data which is provided through devices such as _Jawbone Up_, _Nike FuelBand_ and _Fitbit_.  Using all of the information, we are able to analyze various factors which directly affect how well the person is completing the exercise.  The data was made available through their [website](http://groupware.les.inf.puc-rio.br/har).
+In this study, we analyzed the personal activity data which is provided through devices such as _Jawbone Up_, _Nike FuelBand_ and _Fitbit_.  Using all of the information, we were able to analyze various factors which directly affect how well the person is completing their exercises.  The data was made available through their [website](http://groupware.les.inf.puc-rio.br/har).
 
 Numerous machine learning models were applied to this data set in order to determine which one would best predict the type of activity that the person was performing.  We have determined that the **random forest** machine learning model provided the most accurate results and have applied that to our test data set in order to complete the study.
 
@@ -15,7 +15,7 @@ Numerous machine learning models were applied to this data set in order to deter
 
 ## Setup Environment
 
-Start by setting up the environment.  In order to do this we do the following:
+Start by setting up the environment for analsis.  In order to do this, we need to do the following:
 
  * Load all of the necessary libraries
  * Have a consistent seed value - that way our results are reproducible
